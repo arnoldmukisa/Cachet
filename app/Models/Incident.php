@@ -15,7 +15,6 @@ use AltThree\Validator\ValidatingTrait;
 use CachetHQ\Cachet\Models\Traits\SearchableTrait;
 use CachetHQ\Cachet\Models\Traits\SortableTrait;
 use CachetHQ\Cachet\Presenters\IncidentPresenter;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -75,11 +74,10 @@ class Incident extends Model implements HasPresenter
      * @var string[]
      */
     protected $casts = [
-        'visible'      => 'int',
-        'stickied'     => 'bool',
-        'scheduled_at' => 'date',
-        'occurred_at'  => 'date',
-        'deleted_at'   => 'date',
+        'visible'     => 'int',
+        'stickied'    => 'bool',
+        'occurred_at' => 'datetime',
+        'deleted_at'  => 'date',
     ];
 
     /**
@@ -94,7 +92,6 @@ class Incident extends Model implements HasPresenter
         'visible',
         'stickied',
         'message',
-        'scheduled_at',
         'occurred_at',
         'created_at',
         'updated_at',
@@ -148,7 +145,10 @@ class Incident extends Model implements HasPresenter
      *
      * @var string[]
      */
-    protected $with = ['updates'];
+    protected $with = [
+        'meta',
+        'updates',
+    ];
 
     /**
      * Get the component relation.
@@ -158,6 +158,16 @@ class Incident extends Model implements HasPresenter
     public function component()
     {
         return $this->belongsTo(Component::class, 'component_id', 'id');
+    }
+
+    /**
+     * Get all of the meta relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function meta()
+    {
+        return $this->morphMany(Meta::class, 'meta');
     }
 
     /**
@@ -195,44 +205,6 @@ class Incident extends Model implements HasPresenter
     }
 
     /**
-     * Finds all scheduled incidents (maintenance).
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeScheduled(Builder $query)
-    {
-        return $query->where('status', '=', 0)->where('scheduled_at', '>=', Carbon::now());
-    }
-
-    /**
-     * Finds all non-scheduled incidents.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeNotScheduled(Builder $query)
-    {
-        return $query->where('status', '>', 0)->orWhere(function ($query) {
-            $query->where('status', '=', 0)->where(function ($query) {
-                $query->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', Carbon::now());
-            });
-        });
-    }
-
-    /**
-     * Returns whether the "incident" is scheduled or not.
-     *
-     * @return bool
-     */
-    public function getIsScheduledAttribute()
-    {
-        return $this->getOriginal('scheduled_at') !== null;
-    }
-
-    /**
      * Is the incident resolved?
      *
      * @return bool
@@ -240,10 +212,10 @@ class Incident extends Model implements HasPresenter
     public function getIsResolvedAttribute()
     {
         if ($updates = $this->updates->first()) {
-            return $updates->status === self::FIXED;
+            return (int) $updates->status === self::FIXED;
         }
 
-        return $this->status === self::FIXED;
+        return (int) $this->status === self::FIXED;
     }
 
     /**

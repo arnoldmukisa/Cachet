@@ -94,21 +94,23 @@ class AuthController extends Controller
     {
         // Check that we have a session.
         if ($userId = Session::pull('2fa_id')) {
-            $code = Binput::get('code');
+            $code = str_replace(' ', '', Binput::get('code'));
 
             // Maybe a temp login here.
             Auth::loginUsingId($userId);
 
-            $valid = Google2FA::verifyKey(Auth::user()->google_2fa_secret, $code);
+            $user = Auth::user();
+
+            $valid = Google2FA::verifyKey($user->google_2fa_secret, $code);
 
             if ($valid) {
-                event(new UserPassedTwoAuthEvent(Auth::user()));
+                event(new UserPassedTwoAuthEvent($user));
 
-                event(new UserLoggedInEvent(Auth::user()));
+                event(new UserLoggedInEvent($user));
 
                 return Redirect::intended('dashboard');
             } else {
-                event(new UserFailedTwoAuthEvent(Auth::user()));
+                event(new UserFailedTwoAuthEvent($user));
 
                 // Failed login, log back out.
                 Auth::logout();
@@ -131,6 +133,6 @@ class AuthController extends Controller
 
         Auth::logout();
 
-        return Redirect::to('/');
+        return cachet_redirect('status-page');
     }
 }

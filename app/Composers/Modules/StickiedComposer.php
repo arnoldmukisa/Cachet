@@ -11,8 +11,8 @@
 
 namespace CachetHQ\Cachet\Composers\Modules;
 
-use CachetHQ\Cachet\Dates\DateFactory;
 use CachetHQ\Cachet\Models\Incident;
+use CachetHQ\Cachet\Services\Dates\DateFactory;
 use Illuminate\Contracts\View\View;
 
 /**
@@ -33,9 +33,10 @@ class StickiedComposer
      */
     public function compose(View $view)
     {
-        $stickiedIncidents = Incident::stickied()->orderBy('scheduled_at', 'desc')->orderBy('occurred_at', 'desc')->get()->groupBy(function (Incident $incident) {
+        $stickiedIncidents = Incident::stickied()->orderBy('occurred_at', 'desc')->get()->groupBy(function (Incident $incident) {
             return app(DateFactory::class)->make($incident->is_scheduled ? $incident->scheduled_at : $incident->occurred_at)->toDateString();
         });
+
         $view->withStickiedIncidents($stickiedIncidents);
     }
 }

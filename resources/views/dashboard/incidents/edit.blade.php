@@ -44,6 +44,25 @@
                             {{ trans('cachet.incidents.status')[4] }}
                         </label>
                     </div>
+                    @if($incident->component)
+                    <div class="form-group hidden" id="component-status">
+                        <input type="hidden" name="component_id" value="{{ $incident->component->id }}">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="radio-items">
+                                    @foreach(trans('cachet.components.status') as $statusID => $status)
+                                    <div class="radio-inline">
+                                        <label>
+                                            <input type="radio" name="component_status" value="{{ $statusID }}">
+                                            {{ $status }}
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="incident-visibility">{{ trans('forms.incidents.visibility') }}</label>
                         <select name="visible" id="incident-visibility" class="form-control">
@@ -54,8 +73,8 @@
                     <div class="form-group">
                         <label for="incident-stick">{{ trans('forms.incidents.stick_status') }}</label>
                         <select name="stickied" id="incident-stick" class="form-control">
-                            <option value="1" {{ $incident->stickied === 1 ? 'selected' : null }}>{{ trans('forms.incidents.stickied') }}</option>
-                            <option value="0" {{ $incident->stickied === 0 ? 'selected' : null }}>{{ trans('forms.incidents.not_stickied') }}</option>
+                            <option value="1" {{ $incident->stickied ? 'selected' : null }}>{{ trans('forms.incidents.stickied') }}</option>
+                            <option value="0" {{ !$incident->stickied ? 'selected' : null }}>{{ trans('forms.incidents.not_stickied') }}</option>
                         </select>
                     </div>
                     @if($incident->component)

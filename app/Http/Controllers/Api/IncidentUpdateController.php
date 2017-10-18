@@ -11,8 +11,8 @@
 
 namespace CachetHQ\Cachet\Http\Controllers\Api;
 
+use CachetHQ\Cachet\Bus\Commands\IncidentUpdate\CreateIncidentUpdateCommand;
 use CachetHQ\Cachet\Bus\Commands\IncidentUpdate\RemoveIncidentUpdateCommand;
-use CachetHQ\Cachet\Bus\Commands\IncidentUpdate\ReportIncidentUpdateCommand;
 use CachetHQ\Cachet\Bus\Commands\IncidentUpdate\UpdateIncidentUpdateCommand;
 use CachetHQ\Cachet\Models\Incident;
 use CachetHQ\Cachet\Models\IncidentUpdate;
@@ -36,7 +36,7 @@ class IncidentUpdateController extends AbstractApiController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getIncidentUpdates(Incident $incident)
+    public function index(Incident $incident)
     {
         $updates = IncidentUpdate::orderBy('created_at', 'desc');
 
@@ -59,7 +59,7 @@ class IncidentUpdateController extends AbstractApiController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getIncidentUpdate(Incident $incident, IncidentUpdate $update)
+    public function show(Incident $incident, IncidentUpdate $update)
     {
         return $this->item($update);
     }
@@ -71,10 +71,10 @@ class IncidentUpdateController extends AbstractApiController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postIncidentUpdate(Incident $incident)
+    public function store(Incident $incident)
     {
         try {
-            $update = dispatch(new ReportIncidentUpdateCommand(
+            $update = dispatch(new CreateIncidentUpdateCommand(
                 $incident,
                 Binput::get('status'),
                 Binput::get('message'),
@@ -95,7 +95,7 @@ class IncidentUpdateController extends AbstractApiController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function putIncidentUpdate(Incident $incident, IncidentUpdate $update)
+    public function update(Incident $incident, IncidentUpdate $update)
     {
         try {
             $update = dispatch(new UpdateIncidentUpdateCommand(
@@ -119,7 +119,7 @@ class IncidentUpdateController extends AbstractApiController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteIncidentUpdate(Incident $incident, IncidentUpdate $update)
+    public function destroy(Incident $incident, IncidentUpdate $update)
     {
         try {
             dispatch(new RemoveIncidentUpdateCommand($update));

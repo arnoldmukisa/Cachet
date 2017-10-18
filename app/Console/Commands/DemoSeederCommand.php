@@ -11,6 +11,7 @@
 
 namespace CachetHQ\Cachet\Console\Commands;
 
+use CachetHQ\Cachet\Models\Action;
 use CachetHQ\Cachet\Models\Component;
 use CachetHQ\Cachet\Models\ComponentGroup;
 use CachetHQ\Cachet\Models\Incident;
@@ -18,6 +19,7 @@ use CachetHQ\Cachet\Models\IncidentTemplate;
 use CachetHQ\Cachet\Models\IncidentUpdate;
 use CachetHQ\Cachet\Models\Metric;
 use CachetHQ\Cachet\Models\MetricPoint;
+use CachetHQ\Cachet\Models\Schedule;
 use CachetHQ\Cachet\Models\Subscriber;
 use CachetHQ\Cachet\Models\User;
 use CachetHQ\Cachet\Settings\Repository;
@@ -49,19 +51,19 @@ class DemoSeederCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Seeds Cachet with demo data.';
+    protected $description = 'Seeds Cachet with demo data';
 
     /**
      * The settings repository.
      *
-     * @var \CachetHQ\Cache\Settings\Repository
+     * @var \CachetHQ\Cachet\Settings\Repository
      */
     protected $settings;
 
     /**
      * Create a new demo seeder command instance.
      *
-     * @param \CachetHQ\Cache\Settings\Repository $settings
+     * @param \CachetHQ\Cachet\Settings\Repository $settings
      *
      * @return void
      */
@@ -83,17 +85,29 @@ class DemoSeederCommand extends Command
             return;
         }
 
+        $this->seedActions();
         $this->seedComponentGroups();
         $this->seedComponents();
         $this->seedIncidents();
         $this->seedIncidentTemplates();
         $this->seedMetricPoints();
         $this->seedMetrics();
+        $this->seedSchedules();
         $this->seedSettings();
         $this->seedSubscribers();
         $this->seedUsers();
 
         $this->info('Database seeded with demo data successfully!');
+    }
+
+    /**
+     * Seed the actions table.
+     *
+     * @return void
+     */
+    protected function seedActions()
+    {
+        Action::truncate();
     }
 
     /**
@@ -168,12 +182,12 @@ class DemoSeederCommand extends Command
                 'group_id'    => 2,
                 'link'        => 'https://styleci.io',
             ], [
-                'name'        => 'Patreon Page',
-                'description' => 'Support future development of Cachet.',
+                'name'        => 'GitHub',
+                'description' => '',
                 'status'      => 1,
                 'order'       => 0,
                 'group_id'    => 0,
-                'link'        => 'https://patreon.com/jbrooksuk',
+                'link'        => 'https://github.com/CachetHQ/Cachet',
             ],
         ];
 
@@ -207,7 +221,6 @@ EINCIDENT;
                 'message'      => 'We\'re investigating an issue with our monkeys not performing as they should be.',
                 'status'       => Incident::INVESTIGATING,
                 'component_id' => 0,
-                'scheduled_at' => null,
                 'visible'      => 1,
                 'stickied'     => false,
                 'occurred_at'  => Carbon::now(),
@@ -217,7 +230,6 @@ EINCIDENT;
                 'message'      => 'Unresolved incidents are left without a **Fixed** update.',
                 'status'       => Incident::INVESTIGATING,
                 'component_id' => 0,
-                'scheduled_at' => null,
                 'visible'      => 1,
                 'stickied'     => false,
                 'occurred_at'  => Carbon::now(),
@@ -333,6 +345,29 @@ EINCIDENT;
     }
 
     /**
+     * Seed the schedules table.
+     *
+     * @return void
+     */
+    protected function seedSchedules()
+    {
+        $defaultSchedules = [
+            [
+                'name'         => 'Demo resets every half hour!',
+                'message'      => 'You can schedule downtime for _your_ service!',
+                'status'       => Schedule::UPCOMING,
+                'scheduled_at' => (new DateTime())->add(new DateInterval('PT2H')),
+            ],
+        ];
+
+        Schedule::truncate();
+
+        foreach ($defaultSchedules as $schedule) {
+            Schedule::create($schedule);
+        }
+    }
+
+    /**
      * Seed the settings table.
      *
      * @return void
@@ -358,6 +393,9 @@ EINCIDENT;
             ], [
                 'key'   => 'app_incident_days',
                 'value' => '7',
+            ], [
+                'key'   => 'app_refresh_rate',
+                'value' => '0',
             ], [
                 'key'   => 'app_analytics',
                 'value' => 'UA-58442674-3',

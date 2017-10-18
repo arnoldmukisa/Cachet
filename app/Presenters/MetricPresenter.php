@@ -13,9 +13,10 @@ namespace CachetHQ\Cachet\Presenters;
 
 use CachetHQ\Cachet\Presenters\Traits\TimestampsTrait;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use McCool\LaravelAutoPresenter\BasePresenter;
 
-class MetricPresenter extends BasePresenter implements Arrayable
+class MetricPresenter extends BasePresenter implements Arrayable, Jsonable
 {
     use TimestampsTrait;
 
@@ -27,14 +28,10 @@ class MetricPresenter extends BasePresenter implements Arrayable
     public function view_name()
     {
         switch ($this->wrappedObject->default_view) {
-            case 0:
-                return 'last_hour';
-            case 1:
-                return 'today';
-            case 2:
-                return 'week';
-            case 3:
-                return 'month';
+            case 0: return 'last_hour';
+            case 1: return 'today';
+            case 2: return 'week';
+            case 3: return 'month';
         }
     }
 
@@ -56,14 +53,10 @@ class MetricPresenter extends BasePresenter implements Arrayable
     public function trans_string_name()
     {
         switch ($this->wrappedObject->default_view) {
-            case 0:
-                return 'last_hour';
-            case 1:
-                return 'hourly';
-            case 2:
-                return 'weekly';
-            case 3:
-                return 'monthly';
+            case 0: return 'last_hour';
+            case 1: return 'hourly';
+            case 2: return 'weekly';
+            case 3: return 'monthly';
         }
     }
 
@@ -79,5 +72,19 @@ class MetricPresenter extends BasePresenter implements Arrayable
             'updated_at'        => $this->updated_at(),
             'default_view_name' => $this->default_view_name(),
         ]);
+    }
+
+    /**
+     * Convert the object to its JSON representation.
+     *
+     * @param int $options
+     *
+     * @return string
+     */
+    public function toJson($options = 0)
+    {
+        $json = json_encode($this->toArray(), $options);
+
+        return $json;
     }
 }

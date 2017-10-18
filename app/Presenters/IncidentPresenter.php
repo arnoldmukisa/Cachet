@@ -11,9 +11,9 @@
 
 namespace CachetHQ\Cachet\Presenters;
 
-use CachetHQ\Cachet\Dates\DateFactory;
 use CachetHQ\Cachet\Models\Incident;
 use CachetHQ\Cachet\Presenters\Traits\TimestampsTrait;
+use CachetHQ\Cachet\Services\Dates\DateFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Support\Arrayable;
 use McCool\LaravelAutoPresenter\BasePresenter;
@@ -25,12 +25,12 @@ class IncidentPresenter extends BasePresenter implements Arrayable
     /**
      * The date factory instance.
      *
-     * @var \CachetHQ\Cachet\Dates\DateFactory
+     * @var \CachetHQ\Cachet\Services\Dates\DateFactory
      */
     protected $dates;
 
     /**
-     * Inciden icon lookup.
+     * Incident icon lookup.
      *
      * @var array
      */
@@ -45,16 +45,14 @@ class IncidentPresenter extends BasePresenter implements Arrayable
     /**
      * Create a new presenter.
      *
-     * @param \CachetHQ\Cachet\Dates\DateFactory $dates
-     * @param \CachetHQ\Cachet\Models\Incident   $resource
+     * @param \CachetHQ\Cachet\Services\Dates\DateFactory $dates
+     * @param \CachetHQ\Cachet\Models\Incident            $resource
      *
      * @return void
      */
     public function __construct(DateFactory $dates, Incident $resource)
     {
         $this->dates = $dates;
-
-        parent::__construct($resource);
     }
 
     /**
@@ -62,7 +60,7 @@ class IncidentPresenter extends BasePresenter implements Arrayable
      *
      * @return string
      */
-    public function formattedMessage()
+    public function formatted_message()
     {
         return Markdown::convertToHtml($this->wrappedObject->message);
     }
@@ -74,7 +72,7 @@ class IncidentPresenter extends BasePresenter implements Arrayable
      */
     public function raw_message()
     {
-        return strip_tags($this->formattedMessage());
+        return strip_tags($this->formatted_message());
     }
 
     /**
@@ -158,66 +156,12 @@ class IncidentPresenter extends BasePresenter implements Arrayable
     }
 
     /**
-     * Present formatted date time.
-     *
-     * @return string
-     */
-    public function scheduled_at()
-    {
-        return $this->dates->make($this->wrappedObject->scheduled_at)->toDateTimeString();
-    }
-
-    /**
-     * Present diff for humans date time.
-     *
-     * @return string
-     */
-    public function scheduled_at_diff()
-    {
-        return $this->dates->make($this->wrappedObject->scheduled_at)->diffForHumans();
-    }
-
-    /**
-     * Present formatted date time.
-     *
-     * @return string
-     */
-    public function scheduled_at_formatted()
-    {
-        return ucfirst($this->dates->make($this->wrappedObject->scheduled_at)->format($this->incidentDateFormat()));
-    }
-
-    /**
-     * Present formatted date time.
-     *
-     * @return string
-     */
-    public function scheduled_at_iso()
-    {
-        return $this->dates->make($this->wrappedObject->scheduled_at)->toISO8601String();
-    }
-
-    /**
-     * Formats the scheduled_at time ready to be used by bootstrap-datetimepicker.
-     *
-     * @return string
-     */
-    public function scheduled_at_datetimepicker()
-    {
-        return $this->dates->make($this->wrappedObject->scheduled_at)->format('d/m/Y H:i');
-    }
-
-    /**
      * Returns a formatted timestamp for use within the timeline.
      *
      * @return string
      */
     public function timestamp_formatted()
     {
-        if ($this->wrappedObject->is_scheduled) {
-            return $this->scheduled_at_formatted;
-        }
-
         return $this->occurred_at_formatted;
     }
 
@@ -228,10 +172,6 @@ class IncidentPresenter extends BasePresenter implements Arrayable
      */
     public function timestamp_iso()
     {
-        if ($this->wrappedObject->is_scheduled) {
-            return $this->scheduled_at_iso;
-        }
-
         return $this->occurred_at_iso;
     }
 
@@ -338,6 +278,16 @@ class IncidentPresenter extends BasePresenter implements Arrayable
     }
 
     /**
+     * Return the meta in a key value pair.
+     *
+     * @return array
+     */
+    public function meta()
+    {
+        return $this->wrappedObject->meta->pluck('value', 'key')->all();
+    }
+
+    /**
      * Convert the presenter instance to an array.
      *
      * @return string[]
@@ -352,7 +302,7 @@ class IncidentPresenter extends BasePresenter implements Arrayable
             'latest_icon'         => $this->latest_icon(),
             'permalink'           => $this->permalink(),
             'duration'            => $this->duration(),
-            'scheduled_at'        => $this->scheduled_at(),
+            'meta'                => $this->meta(),
             'occurred_at'         => $this->occurred_at(),
             'created_at'          => $this->created_at(),
             'updated_at'          => $this->updated_at(),

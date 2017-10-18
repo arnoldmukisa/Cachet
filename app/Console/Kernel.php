@@ -14,6 +14,8 @@ namespace CachetHQ\Cachet\Console;
 use CachetHQ\Cachet\Console\Commands\BeaconCommand;
 use CachetHQ\Cachet\Console\Commands\DemoMetricPointSeederCommand;
 use CachetHQ\Cachet\Console\Commands\DemoSeederCommand;
+use CachetHQ\Cachet\Console\Commands\InstallCommand;
+use CachetHQ\Cachet\Console\Commands\VersionCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -35,6 +37,8 @@ class Kernel extends ConsoleKernel
         BeaconCommand::class,
         DemoMetricPointSeederCommand::class,
         DemoSeederCommand::class,
+        InstallCommand::class,
+        VersionCommand::class,
     ];
 
     /**

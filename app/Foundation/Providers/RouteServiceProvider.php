@@ -69,6 +69,7 @@ class RouteServiceProvider extends ServiceProvider
         $router->model('incident_update', 'CachetHQ\Cachet\Models\IncidentUpdate');
         $router->model('metric', 'CachetHQ\Cachet\Models\Metric');
         $router->model('metric_point', 'CachetHQ\Cachet\Models\MetricPoint');
+        $router->model('schedule', 'CachetHQ\Cachet\Models\Schedule');
         $router->model('setting', 'CachetHQ\Cachet\Models\Setting');
         $router->model('subscriber', 'CachetHQ\Cachet\Models\Subscriber');
         $router->model('subscription', 'CachetHQ\Cachet\Models\Subscription');
@@ -88,7 +89,10 @@ class RouteServiceProvider extends ServiceProvider
         $router->group(['namespace' => $this->namespace, 'as' => 'core::'], function (Router $router) {
             $path = app_path('Http/Routes');
 
-            foreach (glob("{$path}/*{,/*}.php", GLOB_BRACE) as $file) {
+            $AllFileIterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+            $PhpFileIterator = new \RegexIterator($AllFileIterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+
+            foreach ($PhpFileIterator as $file => $object) {
                 $class = substr($file, strlen($path));
                 $class = str_replace('/', '\\', $class);
                 $class = substr($class, 0, -4);

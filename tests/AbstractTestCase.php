@@ -15,7 +15,7 @@ use CachetHQ\Cachet\Models\User;
 use CachetHQ\Cachet\Settings\Cache;
 use CachetHQ\Cachet\Settings\Repository;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
+use Laravel\BrowserKitTesting\TestCase;
 
 /**
  * This is the abstract test case class.
@@ -55,7 +55,7 @@ abstract class AbstractTestCase extends TestCase
     /**
      * Sign in an user if it's the case.
      *
-     * @param User|null $user
+     * @param \CachetHQ\Cachet\Models\User|null $user
      *
      * @return \CachetHQ\Tests\Cachet\AbstractTestCase
      */
